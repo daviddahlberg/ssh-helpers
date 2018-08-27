@@ -1,0 +1,99 @@
+.\"$OpenBSD$
+.\"
+.\"Copyright (c) 2018 David Dahlberg <dyn+code@dahlberg.cologne>
+.\"
+.\"Permission to use, copy, modify, and distribute this software for any
+.\"purpose with or without fee is hereby granted, provided that the above
+.\"copyright notice and this permission notice appear in all copies.
+.\"
+.\"THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\"WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\"MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\"ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\"WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\"ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\"OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+.Dd $Mdocdate: May 7 2018 $
+.Dt DROPBEAR-COPY-ID 1
+.Os
+.Sh NAME
+.Nm dropbear-copy-id
+.Nd install local public key into remote
+.Xr dropbear 8
+configuration
+.Sh SYNOPSIS
+.Nm
+.Op Ar user@ Ns
+.Ar hostname
+.Sh DESCRIPTION
+.Nm
+works almost like
+.Xr ssh-copy-id 1
+in that it copies your local
+.Xr ssh 1
+public keys from
+.Pa $HOME/.ssh/id*.pub
+to the
+.Pa authorized_keys
+file of a remote machine.
+Unlike
+.Xr ssh-copy-id 1
+it does not put them into the standard
+.Xr ssh 1
+location, but uses the standard
+.Xr dropbear 8
+path
+.Pa /etc/dropbear/authorized_keys
+on the remote side.
+.Pp
+The following options are available:
+.Bl -tag -width Ds
+.It Ar user
+Username used for login.
+.It Ar hostname
+The hostname or IP address of the machine to connect to.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width Ds
+.It Ev HOME
+The current user's home directory.
+.El
+.Sh FILES
+.Bl -tag -width Ds
+.It Pa $HOME/.ssh/id*.pub
+Public keys to be copied.
+.It Pa /etc/dropbear/authorized_keys
+Destination.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh EXAMPLES
+Copy you
+.Xr ssh 1
+keys to wifirouter.example.com:
+.Dl $ dropbear-copy-id admin@wifirouter.example.com
+.Sh SEE ALSO
+.Xr ssh 1 ,
+.Xr ssh-copy-id 1 ,
+.Xr dropbear 8
+.Sh HISTORY
+The
+.Nm
+utility has been available since 2018.
+.Sh AUTHORS
+.An David Dahlberg Aq Mt dyn+code@dahlberg.cologne
+.Sh CAVEATS
+.Nm
+will copy all
+.Xr ssh 1
+public keys to the remote machine, appending them to the existing config.
+Then it will filter duplicates using
+.Xr uniq 1
+to a temporary file.
+.Pp
+If anybody can interfere with this process, there is a risk of compromise
+leading to unauthorized remote access.
+.Pp
+Also, this process looks error-prone to me.
+So do not do it on machines, on which your only possible access is
+.Xr ssh 1 .

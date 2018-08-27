@@ -1,0 +1,38 @@
+#!/bin/sh
+# Copyright (c) 2018 David Dahlberg <dyn+code@dahlberg.cologne>
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+# Check parameters
+if [ $# -eq 0 ]; then
+        echo "usage: `basename $0` [USER@]HOST"
+        exit 1
+fi
+
+# Set variables
+HOST="$1"
+SSH_ARGS=""
+DEST_FILE="/etc/dropbear/authorized_keys"
+
+# Find pubkeys
+PUBKEYS=`ls -c $HOME/.ssh/id*.pub | sed 's/[[:print:]]*\-cert.pub//g'`
+
+# Copy pubkeys
+for PUBKEY in $PUBKEYS; do
+ ssh $HOST "cat >> $DEST_FILE" < $PUBKEY || exit 1
+done
+
+# Remove duplicates
+tmp=$(mktemp $(basename $0).XXXXXXXXXX)
+ssh $HOST "touch $tmp && chmod 600 $tmp" || exit 1
+ssh $HOST "uniq $DEST_FILE $tmp && cat $tmp $DEST_FILE || rm -f $tmp"
